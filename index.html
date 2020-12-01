@@ -15,6 +15,9 @@
     Salt: <input id="salt" disabled="true"></input><button onclick="generateSalt()">Regenerate salt</button>
 </div>
 <div>
+    Nonce: <input id="nonce" disabled="true"></input>
+</div>
+<div>
     <textarea id="text2Encrypt" placeholder="decrypted text" rows="4" cols="50"></textarea>
 </div>
 <div>
@@ -28,6 +31,7 @@
 <script>
 
     let salt = null;
+    let nonce = null;
     const textDecoder = new TextDecoder();
     const textEncoder = new TextEncoder();
 
@@ -38,6 +42,7 @@
 
     const generateNonce = () => {
         nonce = window.crypto.getRandomValues(new Uint32Array(10));
+        document.getElementById("nonce").value = nonce;
         localforage.setItem('nonce', nonce);
         return nonce;
     }    
@@ -50,17 +55,37 @@
             return deriveKey(keyMaterial);
         }).then( derivedKey => {
             // Encrypt
-            const nonce = generateNonce();
+            nonce = generateNonce();
             let alg = { name: "AES-GCM", iv: nonce };
-            return window.crypto.subtle.decrypt(alg, derivedKey, textEncoder.encode(text2encrypt) )
+            return window.crypto.subtle.encrypt(alg, derivedKey, textEncoder.encode(text2encrypt) )
         }).then( crypted => {
-            document.getElementById("text2Decrypt").value = textDecoder.decode(crypted);
+             document.getElementById("text2Decrypt").value = textDecoder.decode(crypted);
+            onDecrypt(crypted);
+        }).catch( error => {
+            console.log(error);
         });
     }
 
-    const onDecrypt = () => {
+    const onDecrypt = (text2decrypt) => {
         const password = document.getElementById("password").value;
-        const text2decrypt = document.getElementById("text2Decrypt").value;
+        console.log(document.getElementById("text2Decrypt").value);
+        console.log(textEncoder.encode(document.getElementById("text2Decrypt").value));
+        console.log(text2decrypt);
+        if(!text2decrypt) text2decrypt = textEncoder.encode(document.getElementById("text2Decrypt").value);
+        // PI�hK�ҝ�������X_H*
+        importingKey(password).then( keyMaterial => {
+            return deriveKey(keyMaterial);
+        }).then( derivedKey => {
+            // Decrypt
+            let alg = { name: "AES-GCM", iv: nonce };
+            //console.log(alg, derivedKey, textEncoder.encode(text2decrypt));
+            return window.crypto.subtle.decrypt(alg, derivedKey, text2decrypt )
+        }).then( decrypted => {
+            console.log( textDecoder.decode(decrypted));
+            // document.getElementById("text2Encrypt").value = textDecoder.decode(decrypted);
+        }).catch( error => {
+            console.log(error);
+        });
     }
 
     const importingKey = (password) => {
@@ -93,6 +118,12 @@
             salt = value;
         }
         document.getElementById("salt").value =  salt;
+    });
+
+    localforage.getItem('nonce').then( value => {
+        if(!value) return;
+        nonce = value;
+        document.getElementById("nonce").value =  value;
     })
    
 
