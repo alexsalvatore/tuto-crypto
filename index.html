@@ -1,0 +1,64 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <title>Krypto 🥨 Tuto 2</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.9.0/localforage.min.js" integrity="sha512-GkJRKF+k/yzHfJUg9LrNLQhS0jorQe4kES+GHkqtQThCJ5z5A1KwCXH0GYbJApDh/a3ERFvq9xbRJY9mEXzQiA==" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+<h1>Krypto 🥨 Tuto 2</h1>
+<div>
+    Password: <input type="password" id="password"></input>
+</div>
+<div>
+    Salt: <input id="salt" disabled="true"></input><button onclick="generateSalt()">Regenerate salt</button>
+</div>
+<div>
+    <textarea id="text2Encrypt" placeholder="decrypted text" rows="4" cols="50"></textarea>
+</div>
+<div>
+    <button onclick="onEncrypt()">Encrypt</button>
+    <button onclick="onDecrypt()">Decrypt</button>
+</div>
+<div>
+    <textarea id="text2Decrypt" placeholder="encrypted text" rows="4" cols="50"></textarea>
+</div>
+
+
+
+
+
+
+
+<script>
+
+    let salt = null;
+
+    const generateSalt = () => {
+        salt = window.crypto.getRandomValues(new Uint32Array(10));
+        localforage.setItem('salt', salt);
+    }    
+
+    const onEncrypt = () => {
+        const text2encrypt = document.getElementById("text2Encrypt").value;
+    }
+
+    const onDecrypt = () => {
+        const text2decrypt = document.getElementById("text2Decrypt").value;
+    }
+
+    localforage.getItem('salt').then( value => {
+        if(!value){
+            generateSalt();
+        } else {
+            salt = value;
+        }
+        document.getElementById("salt").value =  salt;
+    })
+   
+
+</script>
+
+</body>
+</html>
