@@ -9,7 +9,7 @@
 
 <h1>Crypto🥨Tuto</h1>
 <div>
-    Password: <input type="password" id="password"></input>
+    Password: <input type="password" id="password" value="Sp@gett1"></input>
 </div>
 <div>
     Salt: <input id="salt" disabled="true"></input><button onclick="generateSalt()">Regenerate salt</button>
@@ -59,8 +59,8 @@
             let alg = { name: "AES-GCM", iv: nonce };
             return window.crypto.subtle.encrypt(alg, derivedKey, textEncoder.encode(text2encrypt) )
         }).then( crypted => {
-             document.getElementById("text2Decrypt").value = textDecoder.decode(crypted);
-            onDecrypt(crypted);
+            console.log('crypted',crypted);
+            document.getElementById("text2Decrypt").value = arrayBufferToString(crypted);
         }).catch( error => {
             console.log(error);
         });
@@ -68,11 +68,10 @@
 
     const onDecrypt = (text2decrypt) => {
         const password = document.getElementById("password").value;
-        console.log(document.getElementById("text2Decrypt").value);
-        console.log(textEncoder.encode(document.getElementById("text2Decrypt").value));
-        console.log(text2decrypt);
-        if(!text2decrypt) text2decrypt = textEncoder.encode(document.getElementById("text2Decrypt").value);
-        // PI�hK�ҝ�������X_H*
+       
+        //if(!text2decrypt)
+        text2decrypt = stringToArrayBuffer(document.getElementById("text2Decrypt").value);
+        
         importingKey(password).then( keyMaterial => {
             return deriveKey(keyMaterial);
         }).then( derivedKey => {
@@ -81,8 +80,9 @@
             //console.log(alg, derivedKey, textEncoder.encode(text2decrypt));
             return window.crypto.subtle.decrypt(alg, derivedKey, text2decrypt )
         }).then( decrypted => {
-            console.log( textDecoder.decode(decrypted));
-            // document.getElementById("text2Encrypt").value = textDecoder.decode(decrypted);
+            console.log(decrypted);
+            console.log(textDecoder.decode(decrypted));
+            document.getElementById("text2Encrypt").value = textDecoder.decode(decrypted);
         }).catch( error => {
             console.log(error);
         });
@@ -109,6 +109,19 @@
           true,
           ["encrypt", "decrypt"]
         );
+    }
+
+    const stringToArrayBuffer = (str) => {
+        var buf = new ArrayBuffer(str.length);
+        var bufView = new Uint8Array(buf);
+        for (var i = 0, strLen = str.length; i < strLen; i++) {
+            bufView[i] = str.charCodeAt(i);
+        }
+        return buf;
+    }
+
+    const arrayBufferToString = (buf) => {
+        return String.fromCharCode.apply(null, new Uint8Array(buf));
     }
 
     localforage.getItem('salt').then( value => {
